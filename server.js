@@ -15,11 +15,17 @@ app.use(bodyParser.json()); // Parse JSON payloads
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-// Secret key (if needed for JWT or other auth)
-app.set("secretKey", "i m zainab fatima and i m learning node js with express and mongo db 12234567890");
+app.set("secretKey", process.env.SECRET_KEY);
+
 const Routes = require("./Api/Routes/Routes");
 
 app.use("/user", Routes);
+
+
+
+// Secret key (if needed for JWT or other auth)
+app.set("secretKey", process.env.SECRET_KEY);
+
 
 // Welcome route
 app.get("/", (req, res) => {
@@ -30,10 +36,12 @@ app.get("/", (req, res) => {
 
 async function connectToDatabase() {
   try {
-    await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/mydatabase');
+    await mongoose.connect(process.env.MONGODB_URI);
     console.log("✅ Connected to MongoDB successfully");
   } catch (error) {
-    console.error("❌ Failed connecting to MongoDB:", error);
+   // console.error("❌ Failed connecting to MongoDB:", error);
+   console.log(process.env.MONGODB_URI);
+await mongoose.connect(process.env.MONGODB_URI);
   }
 }
 connectToDatabase();
