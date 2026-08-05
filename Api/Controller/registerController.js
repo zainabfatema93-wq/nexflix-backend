@@ -44,8 +44,8 @@ const token = jwt.sign(
 
 res.cookie("token", token, {
   httpOnly: true,
-  secure: false,
-  sameSite: "lax",
+  secure: true,
+  sameSite: "none",
   maxAge: 60 * 60 * 1000,
 });
 
@@ -112,8 +112,8 @@ return res.status(201).json({
       );
       res.cookie("token", token, {
   httpOnly: true,
-  secure: false,
-  sameSite: "lax",
+  secure: true,
+  sameSite: "none",
   maxAge: 60 * 60 * 1000,
 });
 
@@ -182,11 +182,11 @@ return res.status(201).json({
   // LOGOUT
 logout: async function (req, res) {
   try {
-    res.clearCookie("token", {
-      httpOnly: true,
-      secure: false,
-      sameSite: "lax",
-    });
+   res.clearCookie("token", {
+  httpOnly: true,
+  secure: true,
+  sameSite: "none",
+});
 
     return res.status(200).json({
       success: true,
