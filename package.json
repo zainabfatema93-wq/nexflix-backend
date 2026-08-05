@@ -1,4 +1,8 @@
 {
+  "name": "nexflix-backend",
+  "version": "1.0.0",
+  "description": "Backend API for Nexflix",
+  "main": "server.js",
   "scripts": {
     "start": "node server.js"
   },
