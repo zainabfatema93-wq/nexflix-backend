@@ -12,7 +12,9 @@ const app = express();
 // Middleware
 app.use(
   cors({
-    origin: process.env.CLIENT_URL,
+    origin: [
+      "https://nexflix-frontend-production.up.railway.app",
+    ],
     credentials: true,
   })
 );
@@ -38,7 +40,9 @@ app.get("/", (req, res) => {
 const connectToDatabase = async () => {
   try {
     if (mongoose.connection.readyState === 0) {
-      await mongoose.connect(process.env.MONGODB_URI);
+   await mongoose.connect(process.env.MONGODB_URI, {
+  serverSelectionTimeoutMS: 5000,
+});
       console.log("✅ Connected to MongoDB successfully");
     }
   } catch (error) {
