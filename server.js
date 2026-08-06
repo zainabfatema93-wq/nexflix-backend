@@ -2,7 +2,6 @@ const dns = require("dns");
 
 dns.setServers(["1.1.1.1", "8.8.8.8"]);
 
-
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
@@ -14,7 +13,6 @@ dotenv.config();
 
 const app = express();
 
-// Check environment variable
 console.log("Mongo URI exists:", !!process.env.MONGODB_URI);
 
 // Middleware
@@ -32,24 +30,30 @@ app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
 
+
 // Secret key
 app.set("secretKey", process.env.SECRET_KEY);
 
 
-// MongoDB Connection
-let isConnected = false;
+// MongoDB Connection (Vercel compatible)
+
+let cachedConnection = null;
 
 const connectToDatabase = async () => {
-  if (isConnected) {
-    return;
+
+  if (cachedConnection) {
+    return cachedConnection;
   }
 
   try {
-    await mongoose.connect(process.env.MONGODB_URI);
 
-    isConnected = true;
+    cachedConnection = await mongoose.connect(
+      process.env.MONGODB_URI
+    );
 
     console.log("✅ Connected to MongoDB successfully");
+
+    return cachedConnection;
 
   } catch (error) {
 
@@ -58,50 +62,69 @@ const connectToDatabase = async () => {
       error.message
     );
 
+    throw error;
+
   }
+
 };
 
 
+// Connect database before every request
+
+app.use(async (req, res, next) => {
+
+  try {
+
+    await connectToDatabase();
+
+    next();
+
+  } catch(error){
+
+    res.status(500).json({
+      message:"Database connection failed",
+      error:error.message
+    });
+
+  }
+
+});
+
+
 // Routes
+
 const Routes = require("./Api/Routes/Routes");
 
 app.use("/user", Routes);
 
 
 // Test route
-app.get("/", async (req, res) => {
 
-  await connectToDatabase();
+app.get("/", (req, res)=>{
 
   res.send("Welcome to NETFLIX Backend API");
 
 });
 
 
-// Connect database for every request on Vercel
-app.use(async (req, res, next) => {
-
-  await connectToDatabase();
-
-  next();
-
-});
-
 // Local server
-if (process.env.NODE_ENV !== "production") {
+
+if(process.env.NODE_ENV !== "production"){
+
   const PORT = process.env.PORT || 5000;
 
-  connectToDatabase()
-    .then(() => {
-      app.listen(PORT, () => {
-        console.log(`🚀 Server running on port ${PORT}`);
-      });
-    })
-    .catch((err) => {
-      console.error("Failed to start server:", err);
-    });
+
+  app.listen(PORT, ()=>{
+
+    console.log(
+      `🚀 Server running on port ${PORT}`
+    );
+
+  });
+
 }
 
 
 // Vercel export
+
 module.exports = app;
